@@ -1,0 +1,587 @@
+/* ==========================================================================
+   INTAKE — built on the brand tokens in brand.css (--bg --ink --muted
+   --faint --line --line-2 --warm). Nothing here redefines a brand colour.
+   ========================================================================== */
+
+.ik {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 300;
+  position: relative;
+  z-index: 2;
+}
+
+.ik-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background: radial-gradient(
+    ellipse 90% 55% at 50% -10%,
+    rgba(232, 150, 66, 0.13),
+    rgba(63, 160, 200, 0.05) 42%,
+    transparent 68%
+  );
+  filter: blur(30px);
+}
+
+/* ---------------------------------------------------------------- header */
+
+.ik-top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(5, 5, 6, 0.72);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+}
+.ik-top-in {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 16px 24px 0;
+}
+.ik-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+/* The lockup includes the wordmark, so it needs height to stay legible —
+   below about 40px "NEBULA DIGITAL" turns to mush. */
+.ik-logo {
+  height: 44px;
+  width: auto;
+  filter: drop-shadow(0 0 14px rgba(232, 150, 66, 0.35));
+}
+.ik-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: 1px solid var(--line-2);
+  color: var(--muted);
+  border-radius: 40px;
+  padding: 7px 14px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: 0.22s;
+}
+.ik-lang:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* progress */
+.ik-prog {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 40px;
+  overflow: hidden;
+}
+.ik-prog i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--warm), #f3d8a8);
+  border-radius: 40px;
+  transition: width 0.55s cubic-bezier(0.16, 0.8, 0.2, 1);
+}
+.ik-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0 14px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.ik-steps b {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* ------------------------------------------------------------------ body */
+
+.ik-main {
+  flex: 1;
+  max-width: 780px;
+  width: 100%;
+  margin: 0 auto;
+  /* Bottom padding clears the sticky footer so the last question is never
+     trapped underneath the Continue button. */
+  padding: 52px 24px 30px;
+}
+
+@keyframes ikIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ikInBack {
+  from {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ik-screen {
+  animation: ikIn 0.5s cubic-bezier(0.16, 0.8, 0.2, 1) both;
+}
+.ik-screen.back {
+  animation-name: ikInBack;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ik-screen,
+  .ik-screen.back {
+    animation: none;
+  }
+  .ik-prog i {
+    transition: none;
+  }
+}
+
+.ik-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--warm);
+  display: block;
+  margin-bottom: 18px;
+}
+.ik-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  font-size: clamp(2rem, 5.2vw, 3.1rem);
+  margin-bottom: 12px;
+}
+.ik-sub {
+  color: var(--muted);
+  font-size: 1.05rem;
+  max-width: 48ch;
+  margin-bottom: 56px;
+}
+
+/* ----------------------------------------------------------------- field */
+
+.ik-field {
+  margin-bottom: 46px;
+}
+.ik-q {
+  display: block;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 500;
+  font-size: 1.32rem;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+.ik-opt-tag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-left: 9px;
+  vertical-align: 2px;
+}
+.ik-help {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin-bottom: 20px;
+  max-width: 52ch;
+}
+
+/* text inputs */
+.ik-input,
+.ik-textarea,
+.ik-select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--ink);
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 300;
+  font-size: 1.02rem;
+  padding: 16px 18px;
+  transition: 0.22s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.ik-textarea {
+  min-height: 132px;
+  resize: vertical;
+  line-height: 1.6;
+}
+.ik-input::placeholder,
+.ik-textarea::placeholder {
+  color: var(--faint);
+}
+.ik-input:focus,
+.ik-textarea:focus,
+.ik-select:focus {
+  outline: none;
+  border-color: var(--warm);
+  background: rgba(232, 184, 115, 0.05);
+  box-shadow: 0 0 0 3px rgba(232, 184, 115, 0.12);
+}
+.ik-select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8a90' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  padding-right: 46px;
+}
+.ik-select option {
+  background: #101014;
+  color: var(--ink);
+}
+
+/* choice lists */
+.ik-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ik-opts.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(212px, 1fr));
+}
+.ik-opt {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 15px 17px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 1rem;
+  color: #ddd9d4;
+  user-select: none;
+}
+.ik-opt:hover {
+  border-color: var(--line-2);
+  background: rgba(255, 255, 255, 0.045);
+}
+.ik-opt input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.ik-mark {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.24);
+  display: grid;
+  place-items: center;
+  transition: 0.2s;
+}
+.ik-mark.round {
+  border-radius: 50%;
+}
+.ik-mark.square {
+  border-radius: 6px;
+}
+.ik-mark i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bg);
+  transform: scale(0);
+  transition: 0.2s;
+}
+.ik-mark.square svg {
+  transform: scale(0);
+  transition: 0.2s;
+}
+.ik-opt.on {
+  border-color: var(--warm);
+  background: rgba(232, 184, 115, 0.09);
+  color: var(--ink);
+}
+.ik-opt.on .ik-mark {
+  border-color: var(--warm);
+  background: var(--warm);
+}
+.ik-opt.on .ik-mark i,
+.ik-opt.on .ik-mark svg {
+  transform: scale(1);
+}
+.ik-opt:focus-within {
+  box-shadow: 0 0 0 3px rgba(232, 184, 115, 0.16);
+}
+
+/* errors */
+.ik-field.bad .ik-input,
+.ik-field.bad .ik-textarea,
+.ik-field.bad .ik-select,
+.ik-field.bad .ik-opt {
+  border-color: #d9776b;
+}
+.ik-err {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #e8918a;
+  font-size: 0.88rem;
+  margin-top: 10px;
+}
+
+/* files */
+.ik-drop {
+  border: 1px dashed var(--line-2);
+  border-radius: 14px;
+  padding: 34px 22px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.22s;
+  background: rgba(255, 255, 255, 0.015);
+}
+.ik-drop:hover,
+.ik-drop.over {
+  border-color: var(--warm);
+  background: rgba(232, 184, 115, 0.06);
+}
+.ik-drop b {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 500;
+  color: var(--ink);
+}
+.ik-drop span {
+  color: var(--muted);
+}
+.ik-drop small {
+  display: block;
+  margin-top: 10px;
+  color: var(--faint);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+}
+.ik-filelist {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ik-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 15px;
+  font-size: 0.92rem;
+}
+.ik-file .nm {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ik-file .sz {
+  color: var(--faint);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+}
+.ik-file button {
+  background: none;
+  border: none;
+  color: var(--faint);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+.ik-file button:hover {
+  color: #e8918a;
+  background: rgba(232, 145, 138, 0.1);
+}
+
+/* ---------------------------------------------------------------- footer */
+
+.ik-foot {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(180deg, transparent, var(--bg) 34%);
+  padding: 30px 24px 26px;
+  z-index: 30;
+}
+.ik-foot-in {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ik-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 500;
+  font-size: 0.97rem;
+  padding: 15px 32px;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: 0.24s;
+  border: 1px solid var(--line-2);
+  background: none;
+  color: var(--ink);
+}
+.ik-btn:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+.ik-btn-solid {
+  background: var(--ink);
+  color: #000;
+  border-color: var(--ink);
+  flex: 1;
+}
+.ik-btn-solid:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(244, 243, 241, 0.18);
+}
+.ik-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.ik-formerr {
+  max-width: 780px;
+  margin: 0 auto 12px;
+  color: #e8918a;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------ intro/done */
+
+.ik-centre {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 24px;
+  max-width: 620px;
+  margin: 0 auto;
+}
+.ik-centre .ik-title {
+  font-size: clamp(2.4rem, 7vw, 4.2rem);
+}
+.ik-centre p {
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1.65;
+  margin: 22px 0 0;
+}
+.ik-centre .meta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-top: 34px;
+}
+.ik-herologo {
+  height: auto;
+  max-height: 150px;
+  max-width: 70%;
+  margin-bottom: 26px;
+  filter: drop-shadow(0 0 46px rgba(232, 150, 66, 0.3));
+}
+.ik-tick {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  border: 1px solid var(--warm);
+  display: grid;
+  place-items: center;
+  margin-bottom: 30px;
+  background: rgba(232, 184, 115, 0.08);
+}
+.ik-restored {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  max-width: 780px;
+  margin: 0 auto 30px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 13px 17px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.ik-restored button {
+  background: none;
+  border: none;
+  color: var(--warm);
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 0;
+}
+
+/* honeypot — off-screen, not display:none, so bots still see it */
+.ik-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+@media (max-width: 560px) {
+  .ik-main {
+    padding: 38px 20px 30px;
+  }
+  .ik-top-in,
+  .ik-foot {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .ik-sub {
+    margin-bottom: 42px;
+  }
+  .ik-field {
+    margin-bottom: 38px;
+  }
+  .ik-opts.grid {
+    grid-template-columns: 1fr;
+  }
+  .ik-btn {
+    padding: 15px 24px;
+  }
+}

@@ -1,0 +1,525 @@
+/* ==========================================================================
+   ADMIN — same brand tokens, denser layout. Built for scanning, not selling.
+   ========================================================================== */
+
+.ad {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 300;
+}
+
+.ad-top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(5, 5, 6, 0.82);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+}
+.ad-top-in {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.ad-logo {
+  height: 38px;
+  filter: drop-shadow(0 0 12px rgba(232, 150, 66, 0.3));
+}
+.ad-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.ad-brand span {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.ad-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ad-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 34px 26px 90px;
+}
+
+.ad-h {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-size: clamp(1.7rem, 3.6vw, 2.4rem);
+  margin-bottom: 6px;
+}
+.ad-meta {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin-bottom: 30px;
+}
+
+/* filters */
+.ad-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.ad-chip {
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--muted);
+  border-radius: 40px;
+  padding: 8px 17px;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: 0.2s;
+  font-family: "Inter", sans-serif;
+}
+.ad-chip:hover {
+  border-color: var(--line-2);
+  color: var(--ink);
+}
+.ad-chip.on {
+  background: var(--ink);
+  color: #000;
+  border-color: var(--ink);
+  font-weight: 500;
+}
+
+/* list */
+.ad-list {
+  border-top: 1px solid var(--line);
+}
+.ad-row {
+  border-bottom: 1px solid var(--line);
+}
+.ad-row-head {
+  display: grid;
+  grid-template-columns: 1.5fr 1.1fr 0.9fr 0.9fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 20px 8px 20px 4px;
+  cursor: pointer;
+  transition: 0.28s;
+}
+.ad-row-head:hover {
+  background: rgba(255, 255, 255, 0.022);
+  padding-left: 12px;
+}
+.ad-biz {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 500;
+  font-size: 1.08rem;
+  letter-spacing: -0.01em;
+}
+.ad-who {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin-top: 3px;
+}
+.ad-cell {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.ad-when {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.74rem;
+  color: var(--faint);
+  letter-spacing: 0.04em;
+}
+.ad-caret {
+  color: var(--faint);
+  transition: 0.3s;
+}
+.ad-row.open .ad-caret {
+  transform: rotate(90deg);
+  color: var(--warm);
+}
+
+.ad-pill {
+  display: inline-block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 40px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.ad-pill.new {
+  color: var(--warm);
+}
+.ad-pill.reviewed {
+  color: #7fb3d5;
+}
+.ad-pill.quoted {
+  color: #86c9a4;
+}
+
+/* expanded */
+.ad-body {
+  padding: 8px 4px 38px;
+  animation: adIn 0.35s cubic-bezier(0.16, 0.8, 0.2, 1) both;
+}
+@keyframes adIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ad-tools {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+  margin-bottom: 30px;
+}
+.ad-tool {
+  flex: 1;
+  min-width: 240px;
+}
+.ad-tool > label {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 10px;
+}
+.ad-status-set {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.ad-notes {
+  width: 100%;
+  min-height: 82px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  font-family: "Inter", sans-serif;
+  font-weight: 300;
+  font-size: 0.94rem;
+  padding: 12px 14px;
+  resize: vertical;
+  line-height: 1.55;
+}
+.ad-notes:focus {
+  outline: none;
+  border-color: var(--warm);
+  box-shadow: 0 0 0 3px rgba(232, 184, 115, 0.12);
+}
+.ad-saved {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #86c9a4;
+  margin-top: 8px;
+  height: 12px;
+}
+
+.ad-sec {
+  margin-bottom: 30px;
+}
+.ad-sec > h4 {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--warm);
+  margin-bottom: 14px;
+}
+.ad-qa {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 14px 26px;
+  padding: 13px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+.ad-qa dt {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.ad-qa dd {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ad-qa dd.none {
+  color: var(--faint);
+}
+
+.ad-files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ad-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 15px;
+  font-size: 0.92rem;
+  color: var(--ink);
+  text-decoration: none;
+  transition: 0.2s;
+}
+.ad-file:hover {
+  border-color: var(--warm);
+}
+.ad-file .sz {
+  margin-left: auto;
+  color: var(--faint);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+}
+
+.ad-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 500;
+  font-size: 0.88rem;
+  padding: 10px 20px;
+  border-radius: 40px;
+  border: 1px solid var(--line-2);
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+  transition: 0.22s;
+  text-decoration: none;
+}
+.ad-btn:hover {
+  border-color: var(--ink);
+}
+.ad-btn-solid {
+  background: var(--ink);
+  color: #000;
+  border-color: var(--ink);
+}
+
+.ad-empty {
+  text-align: center;
+  padding: 90px 20px;
+  color: var(--muted);
+}
+
+/* login */
+.ad-login {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+.ad-login-card {
+  width: 100%;
+  max-width: 390px;
+  text-align: center;
+}
+.ad-login-card img {
+  height: 46px;
+  margin-bottom: 30px;
+  filter: drop-shadow(0 0 20px rgba(232, 150, 66, 0.3));
+}
+.ad-login-card h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 500;
+  font-size: 1.7rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 26px;
+}
+.ad-login-card input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--ink);
+  font-size: 1rem;
+  padding: 15px 17px;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+}
+.ad-login-card input:focus {
+  outline: none;
+  border-color: var(--warm);
+  box-shadow: 0 0 0 3px rgba(232, 184, 115, 0.12);
+}
+.ad-login-err {
+  color: #e8918a;
+  font-size: 0.88rem;
+  margin-top: 14px;
+  min-height: 18px;
+}
+
+@media (max-width: 860px) {
+  .ad-row-head {
+    grid-template-columns: 1fr auto;
+    gap: 8px 14px;
+  }
+  .ad-row-head .ad-cell,
+  .ad-row-head .ad-when {
+    grid-column: 1;
+  }
+  .ad-qa {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+}
+
+/* ---------------------------------------------------------------- print */
+
+.pr {
+  background: #fff;
+  color: #14141a;
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 400;
+  min-height: 100dvh;
+}
+.pr-wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 54px 44px 80px;
+}
+.pr-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  border-bottom: 2px solid #14141a;
+  padding-bottom: 22px;
+  margin-bottom: 32px;
+}
+.pr-head h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 600;
+  font-size: 1.9rem;
+  letter-spacing: -0.025em;
+  margin-bottom: 5px;
+}
+.pr-head .sub {
+  color: #6b6b73;
+  font-size: 0.92rem;
+}
+.pr-head .id {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.64rem;
+  color: #9a9aa2;
+  text-align: right;
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+}
+.pr-sec {
+  margin-bottom: 30px;
+  break-inside: avoid;
+}
+.pr-sec h2 {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #a07a34;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e6e4df;
+}
+.pr-qa {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 10px 24px;
+  padding: 10px 0;
+  break-inside: avoid;
+}
+.pr-qa dt {
+  color: #6b6b73;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.pr-qa dd {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.pr-foot {
+  margin-top: 40px;
+  padding-top: 18px;
+  border-top: 1px solid #e6e4df;
+  color: #9a9aa2;
+  font-size: 0.78rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pr-bar {
+  position: sticky;
+  top: 0;
+  background: #f4f3f1;
+  border-bottom: 1px solid #e0ded8;
+  padding: 12px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.pr-bar button,
+.pr-bar a {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.86rem;
+  font-weight: 500;
+  padding: 9px 20px;
+  border-radius: 40px;
+  border: 1px solid #14141a;
+  background: none;
+  color: #14141a;
+  cursor: pointer;
+  text-decoration: none;
+}
+.pr-bar button {
+  background: #14141a;
+  color: #fff;
+}
+
+@media print {
+  .pr-bar {
+    display: none;
+  }
+  .pr-wrap {
+    padding: 0;
+    max-width: none;
+  }
+  @page {
+    margin: 16mm;
+  }
+}
