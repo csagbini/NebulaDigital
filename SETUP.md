@@ -79,6 +79,13 @@ Worth understanding, because it's different from the Supabase plan:
   unguessable — but they are publicly readable to anyone holding the URL. If
   clients will upload genuinely sensitive documents, switch to private blobs.
 
+  Switching is more than a store setting. `cleanFiles()` in
+  `src/app/api/intake/route.ts` only accepts URLs matching
+  `*.public.blob.vercel-storage.com` — a private store serves a different host,
+  so that check silently drops every file until the pattern is updated. The
+  admin view and the notification email link the stored URL directly, so both
+  would also need signed URLs.
+
 ## Local development
 
 ```bash

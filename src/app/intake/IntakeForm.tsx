@@ -363,7 +363,6 @@ export default function IntakeForm() {
             <strong style={{ color: "var(--ink)", fontWeight: 500 }}>{bold}</strong>
             {after}
           </p>
-          <div className="meta">{t.thanksFoot}</div>
           <div style={{ marginTop: 38 }}>
             <a className="ik-btn" href="https://nebuladigital.io">
               {t.thanksBack}

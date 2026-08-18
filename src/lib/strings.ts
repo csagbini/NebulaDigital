@@ -92,7 +92,6 @@ export interface UiStrings {
   fileRemove: string;
   thanksTitle: string;
   thanksBody: string;
-  thanksFoot: string;
   thanksBack: string;
   restored: string;
   restartLink: string;
@@ -134,7 +133,6 @@ export const ui: Record<Lang, UiStrings> = {
     thanksTitle: "Thank you.",
     thanksBody:
       "We've got everything we need. We'll review your answers and follow up within **2 business days** with next steps.",
-    thanksFoot: "A copy has been sent to the email you gave us.",
     thanksBack: "Back to nebuladigital.io",
     restored: "We restored your answers from last time.",
     restartLink: "Start over",
@@ -174,7 +172,6 @@ export const ui: Record<Lang, UiStrings> = {
     thanksTitle: "Gracias.",
     thanksBody:
       "Ya tenemos todo lo que necesitamos. Revisaremos tus respuestas y te contactaremos en un plazo de **2 días hábiles** con los siguientes pasos.",
-    thanksFoot: "Enviamos una copia al correo que nos diste.",
     thanksBack: "Volver a nebuladigital.io",
     restored: "Restauramos tus respuestas anteriores.",
     restartLink: "Empezar de nuevo",
