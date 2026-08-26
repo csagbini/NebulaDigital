@@ -7,11 +7,9 @@
  *
  *   - Edit any `en:` or `es:` string freely. Save, redeploy, done.
  *   - Do NOT change a `key:` or an option `value:` unless you mean it.
- *     Those become database column names and stored values. Changing one
- *     needs a database migration, and old submissions won't match.
- *   - To add a question: add a field to a section below, then re-run
- *     `npm run db:sql` and apply the generated SQL. The form, the server-side
- *     validation, the admin table and the printable summary all pick it up
+ *     Those identify answers in the notification email.
+ *   - To add a question: add a field to a section below. The form, the
+ *     server-side validation, and the notification email all pick it up
  *     automatically — you don't touch any component.
  *
  * ============================================================================
@@ -27,17 +25,16 @@ export type FieldType =
   | "textarea"
   | "radio"
   | "checkbox"
-  | "select"
-  | "file";
+  | "select";
 
 export interface Option {
-  value: string; // stored in the database — treat as permanent
+  value: string; // sent in the notification email — treat as permanent
   en: string;
   es: string;
 }
 
 export interface Field {
-  key: string; // database column name — treat as permanent
+  key: string; // field id in the notification email — treat as permanent
   type: FieldType;
   required?: boolean;
   label: { en: string; es: string };
@@ -86,10 +83,6 @@ export interface UiStrings {
   errFixAbove: string;
   errSubmit: string;
   errRateLimit: string;
-  fileAdd: string;
-  fileDrop: string;
-  fileLimits: string;
-  fileRemove: string;
   thanksTitle: string;
   thanksBody: string;
   thanksBack: string;
@@ -126,10 +119,6 @@ export const ui: Record<Lang, UiStrings> = {
       "Something went wrong sending this. Your answers are still saved — please try again.",
     errRateLimit:
       "That's a few too many submissions from this connection. Please try again in a little while.",
-    fileAdd: "Add files",
-    fileDrop: "or drag them here",
-    fileLimits: "PDF, images, docs or zip · up to 10 files, 10 MB each",
-    fileRemove: "Remove",
     thanksTitle: "Thank you.",
     thanksBody:
       "We've got everything we need. We'll review your answers and follow up within **2 business days** with next steps.",
@@ -165,10 +154,6 @@ export const ui: Record<Lang, UiStrings> = {
       "Algo salió mal al enviar. Tus respuestas siguen guardadas — inténtalo de nuevo.",
     errRateLimit:
       "Demasiados envíos desde esta conexión. Inténtalo de nuevo en un rato.",
-    fileAdd: "Agregar archivos",
-    fileDrop: "o arrástralos aquí",
-    fileLimits: "PDF, imágenes, documentos o zip · hasta 10 archivos de 10 MB",
-    fileRemove: "Quitar",
     thanksTitle: "Gracias.",
     thanksBody:
       "Ya tenemos todo lo que necesitamos. Revisaremos tus respuestas y te contactaremos en un plazo de **2 días hábiles** con los siguientes pasos.",
@@ -828,15 +813,16 @@ export const sections: Section[] = [
         },
       },
       {
-        key: "files",
-        type: "file",
+        key: "file_links",
+        type: "textarea",
+        maxLength: 2000,
         label: {
-          en: "Upload anything useful — logo files, brand guides, photos, a brief, examples.",
-          es: "Sube lo que sea útil — archivos del logo, manual de marca, fotos, un brief, ejemplos.",
+          en: "Links to logos, brand guides, photos, a brief, or examples.",
+          es: "Enlaces a logos, manual de marca, fotos, un brief o ejemplos.",
         },
         help: {
-          en: "Optional. PDF, images, docs or zip — up to 10 files, 10 MB each.",
-          es: "Opcional. PDF, imágenes, documentos o zip — hasta 10 archivos de 10 MB cada uno.",
+          en: "Optional. Paste Google Drive, Dropbox, or website links. You can also attach files when you reply to our follow-up email.",
+          es: "Opcional. Pega enlaces de Google Drive, Dropbox o un sitio web. También puedes adjuntar archivos cuando respondas nuestro correo.",
         },
       },
     ],
@@ -844,14 +830,11 @@ export const sections: Section[] = [
 ];
 
 /* ==========================================================================
- * DERIVED HELPERS — used by the form, the API and the admin page
+ * DERIVED HELPERS — used by the form, the API and the notification email
  * ========================================================================== */
 
 /** Every field across every section, flattened. */
 export const allFields: Field[] = sections.flatMap((s) => s.fields);
-
-/** Every field that maps to a database column (files are stored separately). */
-export const dataFields: Field[] = allFields.filter((f) => f.type !== "file");
 
 export function fieldByKey(key: string): Field | undefined {
   return allFields.find((f) => f.key === key);
@@ -861,12 +844,3 @@ export function optionLabel(field: Field, value: string, lang: Lang): string {
   const opt = field.options?.find((o) => o.value === value);
   return opt ? opt[lang] : value;
 }
-
-/** Statuses for the admin page. */
-export const statuses = [
-  { value: "new", en: "New", es: "Nuevo" },
-  { value: "reviewed", en: "Reviewed", es: "Revisado" },
-  { value: "quoted", en: "Quoted", es: "Cotizado" },
-] as const;
-
-export type Status = (typeof statuses)[number]["value"];

@@ -1,39 +1,18 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { sql } from "@/lib/db";
 import { sendNotification } from "@/lib/email";
 import {
   clientIp,
   hashIp,
   isRateLimited,
   looksLikeBot,
+  recordAttempt,
 } from "@/lib/security";
-import { dataFields, type Lang } from "@/lib/strings";
+import { type Lang } from "@/lib/strings";
 import { sanitize, validateAll } from "@/lib/validate";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-interface UploadedFile {
-  name: string;
-  url: string;
-  size: number;
-  type: string;
-}
-
-function cleanFiles(raw: unknown): UploadedFile[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .filter((f): f is Record<string, unknown> => typeof f === "object" && f !== null)
-    .map((f) => ({
-      name: String(f.name ?? "file").slice(0, 250),
-      url: String(f.url ?? ""),
-      size: Number(f.size ?? 0),
-      type: String(f.type ?? "").slice(0, 120),
-    }))
-    // Only accept URLs that actually came from our own Blob store.
-    .filter((f) => /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i.test(f.url))
-    .slice(0, 10);
-}
 
 export async function POST(request: Request) {
   let payload: Record<string, unknown>;
@@ -46,7 +25,7 @@ export async function POST(request: Request) {
   const lang: Lang = payload.lang === "es" ? "es" : "en";
 
   // --- spam gate -----------------------------------------------------
-  // A bot gets a 200 and no row. Telling it that it failed just teaches
+  // A bot gets a 200 and no email. Telling it that it failed just teaches
   // whoever wrote it to try harder.
   if (looksLikeBot(payload)) {
     return NextResponse.json({ ok: true });
@@ -63,54 +42,26 @@ export async function POST(request: Request) {
   }
 
   // --- rate limit ----------------------------------------------------
+  // In-memory on this process. Resets when Node restarts. See SETUP.md.
   const ip = clientIp(request.headers);
   const ipHash = hashIp(ip);
-  if (await isRateLimited(ipHash)) {
+  if (isRateLimited(ipHash)) {
     return NextResponse.json({ ok: false, rateLimited: true }, { status: 429 });
   }
 
-  const files = cleanFiles(payload.files);
-  const userAgent = (request.headers.get("user-agent") ?? "").slice(0, 500);
-
-  // --- insert --------------------------------------------------------
-  // Column names come from our own strings.ts, never from the request, so
-  // building the list here can't be injected into. Values are parameterised.
-  const columns = ["lang", "ip_hash", "user_agent", "files", ...dataFields.map((f) => f.key)];
-  const params: unknown[] = [
+  // --- notify --------------------------------------------------------
+  // Email is the system of record. If Resend fails, the client should retry.
+  const id = randomUUID();
+  const sent = await sendNotification({
+    id,
+    row: values,
     lang,
-    ipHash,
-    userAgent,
-    JSON.stringify(files),
-    ...dataFields.map((f) => values[f.key] ?? (f.type === "checkbox" ? [] : "")),
-  ];
-  const placeholders = columns.map((_, i) => `$${i + 1}`).join(", ");
+  });
 
-  let id: string;
-  try {
-    const db = sql();
-    const rows = (await db.unsafe(
-      `insert into client_intakes (${columns.join(", ")})
-       values (${placeholders})
-       returning id`,
-      params as never[],
-    )) as unknown as { id: string }[];
-    id = rows[0].id;
-  } catch (err) {
-    console.error("[intake] Insert failed:", err);
+  if (!sent) {
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 
-  // --- notify --------------------------------------------------------
-  // Deliberately after the insert and never fatal: if email fails we still
-  // have the submission, and the client should still see the thank-you.
-  const origin = new URL(request.url).origin;
-  await sendNotification({
-    id,
-    row: { ...values, files },
-    lang,
-    files,
-    adminUrl: `${origin}/admin/intakes?open=${id}`,
-  });
-
+  recordAttempt(ipHash);
   return NextResponse.json({ ok: true, id });
 }
