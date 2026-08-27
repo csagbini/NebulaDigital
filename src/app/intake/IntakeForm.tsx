@@ -303,10 +303,18 @@ export default function IntakeForm() {
 
   /* ------ thank you ------ */
   if (done) {
-    const [before, bold, after] = t.thanksBody.split("**");
     return (
       <div className="ik">
         <div className="ik-glow" />
+        <div className="ik-top">
+          <div className="ik-top-in">
+            <div className="ik-bar">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="ik-logo" src="/brand.png" alt={t.brandAlt} />
+              {LangToggle}
+            </div>
+          </div>
+        </div>
         <div className="ik-centre">
           <div className="ik-tick">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--warm)" strokeWidth="1.8">
@@ -314,11 +322,7 @@ export default function IntakeForm() {
             </svg>
           </div>
           <h1 className="ik-title">{t.thanksTitle}</h1>
-          <p>
-            {before}
-            <strong style={{ color: "var(--ink)", fontWeight: 500 }}>{bold}</strong>
-            {after}
-          </p>
+          <p>{t.thanksBody}</p>
           <div style={{ marginTop: 38 }}>
             <a className="ik-btn" href="https://nebuladigital.io">
               {t.thanksBack}

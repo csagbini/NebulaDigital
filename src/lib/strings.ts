@@ -120,8 +120,7 @@ export const ui: Record<Lang, UiStrings> = {
     errRateLimit:
       "That's a few too many submissions from this connection. Please try again in a little while.",
     thanksTitle: "Thank you.",
-    thanksBody:
-      "We've got everything we need. We'll review your answers and follow up within **2 business days** with next steps.",
+    thanksBody: "We'll get back to you soon.",
     thanksBack: "Back to nebuladigital.io",
     restored: "We restored your answers from last time.",
     restartLink: "Start over",
@@ -155,8 +154,7 @@ export const ui: Record<Lang, UiStrings> = {
     errRateLimit:
       "Demasiados envíos desde esta conexión. Inténtalo de nuevo en un rato.",
     thanksTitle: "Gracias.",
-    thanksBody:
-      "Ya tenemos todo lo que necesitamos. Revisaremos tus respuestas y te contactaremos en un plazo de **2 días hábiles** con los siguientes pasos.",
+    thanksBody: "Te contactaremos pronto.",
     thanksBack: "Volver a nebuladigital.io",
     restored: "Restauramos tus respuestas anteriores.",
     restartLink: "Empezar de nuevo",
