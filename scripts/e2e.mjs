@@ -126,7 +126,7 @@ if (process.env.RESEND_API_KEY) {
 
 console.log("\n--- admin ---");
 const browser = await chromium.launch({
-  executablePath: process.env.PLAYWRIGHT_CHROME || undefined,
+  executablePath: process.env.PLAYWRIGHT_CHROME || "/usr/local/bin/google-chrome",
   args: ["--no-sandbox"],
 });
 const adm = await browser.newContext({ viewport: { width: 1440, height: 950 } });

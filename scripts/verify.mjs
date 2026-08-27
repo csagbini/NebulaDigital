@@ -1,7 +1,7 @@
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 
-const OUT = "/home/claude/shots";
+const OUT = process.env.SHOTS || "/tmp/nebula-shots";
 mkdirSync(OUT, { recursive: true });
 const BASE = "http://localhost:3000";
 const fails = [];
@@ -11,10 +11,10 @@ function check(name, ok, detail = "") {
   if (!ok) fails.push(name);
 }
 
-// The container ships Chromium build 1194; the npm playwright package wants a
-// newer one. Point at what's actually here rather than downloading a browser.
 const browser = await chromium.launch({
-  executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+  executablePath:
+    process.env.PLAYWRIGHT_CHROME ||
+    "/usr/local/bin/google-chrome",
   args: ["--no-sandbox"],
 });
 
