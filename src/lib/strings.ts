@@ -234,6 +234,7 @@ export const sections: Section[] = [
             en: "AI / automation",
             es: "IA / automatización",
           },
+          { value: "custom_app", en: "Custom app", es: "App a medida" },
         ],
       },
       {

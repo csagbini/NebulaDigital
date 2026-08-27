@@ -249,7 +249,7 @@ export default function IntakeForm() {
           <div className="ik-top-in">
             <div className="ik-bar">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="ik-logo" src="/brand.png" alt={t.brandAlt} />
+              <img className="ik-logo" src="/mark.webp" alt={t.brandAlt} />
               {LangToggle}
             </div>
           </div>
@@ -281,7 +281,7 @@ export default function IntakeForm() {
         <div className="ik-top-in">
           <div className="ik-bar">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="ik-logo" src="/brand.png" alt={t.brandAlt} />
+            <img className="ik-logo" src="/mark.webp" alt={t.brandAlt} />
             {LangToggle}
           </div>
         </div>
