@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { ADMIN_COOKIE, verifySessionToken } from "./security";
 
 /**
- * Guard for admin server components. Every protected page calls this before
- * touching the database, so an unauthenticated request never reaches a query.
+ * Guard for admin server components. Every protected page calls this first
+ * so an unauthenticated request never sees the notice page.
  */
 export async function requireAdmin(returnTo: string): Promise<void> {
   const jar = await cookies();

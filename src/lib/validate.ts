@@ -137,7 +137,6 @@ export function validateSection(
 ): Errors {
   const errors: Errors = {};
   for (const field of visibleFields(section.fields, values)) {
-    if (field.type === "file") continue;
     const err = validateField(field, values[field.key], lang);
     if (err) errors[field.key] = err;
   }
@@ -167,7 +166,6 @@ export function sanitize(input: unknown): Values {
 
   // First pass: primitives, so `showIf` conditions can be evaluated.
   for (const field of allFields) {
-    if (field.type === "file") continue;
     const raw = src[field.key];
 
     if (field.type === "checkbox") {
@@ -197,7 +195,6 @@ export function sanitize(input: unknown): Values {
 
   // Second pass: blank out anything that shouldn't have been asked.
   for (const field of allFields) {
-    if (field.type === "file") continue;
     if (!isVisible(field, out)) {
       out[field.key] = field.type === "checkbox" ? [] : "";
     }

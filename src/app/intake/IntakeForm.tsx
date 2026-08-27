@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { upload } from "@vercel/blob/client";
 import {
   type Field,
   type Lang,
@@ -12,7 +11,6 @@ import {
 import {
   type Errors,
   type Values,
-  isVisible,
   validateSection,
   visibleFields,
 } from "@/lib/validate";
@@ -20,15 +18,6 @@ import { HONEYPOT_FIELD } from "@/lib/security.client";
 
 const STORAGE_KEY = "nebula_intake_v1";
 const LANG_KEY = "nebula_lang";
-const MAX_FILES = 10;
-const MAX_FILE_BYTES = 10 * 1024 * 1024;
-
-interface Attached {
-  name: string;
-  size: number;
-  type: string;
-  file: File;
-}
 
 interface Saved {
   values: Values;
@@ -40,7 +29,6 @@ function emptyValues(): Values {
   const v: Values = {};
   for (const s of sections) {
     for (const f of s.fields) {
-      if (f.type === "file") continue;
       v[f.key] = f.type === "checkbox" ? [] : "";
     }
   }
@@ -52,7 +40,6 @@ export default function IntakeForm() {
   const [step, setStep] = useState(-1); // -1 intro · 0..n-1 sections · n done
   const [values, setValues] = useState<Values>(emptyValues);
   const [errors, setErrors] = useState<Errors>({});
-  const [files, setFiles] = useState<Attached[]>([]);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const [restored, setRestored] = useState(false);
@@ -185,16 +172,6 @@ export default function IntakeForm() {
     }
   }
 
-  /* ------------------------------------------------------------- files */
-
-  function addFiles(list: FileList | null) {
-    if (!list) return;
-    const incoming = Array.from(list)
-      .filter((f) => f.size <= MAX_FILE_BYTES)
-      .map((f) => ({ name: f.name, size: f.size, type: f.type, file: f }));
-    setFiles((prev) => [...prev, ...incoming].slice(0, MAX_FILES));
-  }
-
   /* ------------------------------------------------------------ submit */
 
   async function submit() {
@@ -202,32 +179,12 @@ export default function IntakeForm() {
     setFormError("");
 
     try {
-      // Files go straight from the browser to Blob storage. Routing them
-      // through the API would hit Vercel's 4.5 MB request body limit.
-      const uploaded: { name: string; url: string; size: number; type: string }[] =
-        [];
-
-      for (const f of files) {
-        const blob = await upload(f.name, f.file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
-          multipart: f.size > 5 * 1024 * 1024,
-        });
-        uploaded.push({
-          name: f.name,
-          url: blob.url,
-          size: f.size,
-          type: f.type,
-        });
-      }
-
       const res = await fetch("/api/intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...values,
           lang,
-          files: uploaded,
           started_at: startedAt.current,
           [HONEYPOT_FIELD]: honeypot.current?.value ?? "",
         }),
@@ -280,7 +237,6 @@ export default function IntakeForm() {
       /* ignore */
     }
     setValues(emptyValues());
-    setFiles([]);
     setErrors({});
     setRestored(false);
     startedAt.current = Date.now();
@@ -424,13 +380,8 @@ export default function IntakeForm() {
               lang={lang}
               value={values[field.key]}
               error={errors[field.key]}
-              files={files}
               onChange={setValue}
               onToggle={toggleCheckbox}
-              onAddFiles={addFiles}
-              onRemoveFile={(i) =>
-                setFiles((prev) => prev.filter((_, idx) => idx !== i))
-              }
               t={t}
             />
           ))}
@@ -490,25 +441,18 @@ function FieldView({
   lang,
   value,
   error,
-  files,
   onChange,
   onToggle,
-  onAddFiles,
-  onRemoveFile,
   t,
 }: {
   field: Field;
   lang: Lang;
   value: string | string[];
   error?: string;
-  files: Attached[];
   onChange: (key: string, v: string) => void;
   onToggle: (key: string, option: string) => void;
-  onAddFiles: (l: FileList | null) => void;
-  onRemoveFile: (i: number) => void;
   t: UiStrings;
 }) {
-  const [over, setOver] = useState(false);
   const str = typeof value === "string" ? value : "";
   const arr = Array.isArray(value) ? value : [];
   const many = (field.options?.length ?? 0) > 6;
@@ -517,7 +461,7 @@ function FieldView({
     <div className={`ik-field${error ? " bad" : ""}`} data-field={field.key}>
       <label className="ik-q" htmlFor={field.key}>
         {field.label[lang]}
-        {!field.required && field.type !== "file" && (
+        {!field.required && (
           <span className="ik-opt-tag">{t.optional}</span>
         )}
       </label>
@@ -637,48 +581,6 @@ function FieldView({
             </label>
           ))}
         </div>
-      )}
-
-      {field.type === "file" && (
-        <>
-          <label
-            className={`ik-drop${over ? " over" : ""}`}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setOver(true);
-            }}
-            onDragLeave={() => setOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setOver(false);
-              onAddFiles(e.dataTransfer.files);
-            }}
-          >
-            <input
-              id={field.key}
-              type="file"
-              multiple
-              style={{ display: "none" }}
-              onChange={(e) => onAddFiles(e.target.files)}
-            />
-            <b>{t.fileAdd}</b> <span>{t.fileDrop}</span>
-            <small>{t.fileLimits}</small>
-          </label>
-
-          {files.length > 0 && (
-            <div className="ik-filelist">
-              {files.map((f, i) => (
-                <div className="ik-file" key={`${f.name}-${i}`}>
-                  <span className="nm">{f.name}</span>
-                  <span className="sz">{(f.size / 1024 / 1024).toFixed(2)} MB</span>
-                  <button type="button" onClick={() => onRemoveFile(i)}>
-                    {t.fileRemove}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
       )}
 
       {error && (

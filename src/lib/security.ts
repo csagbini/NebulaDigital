@@ -1,5 +1,4 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import { sql } from "./db";
 import { HONEYPOT_FIELD } from "./security.client";
 
 export { HONEYPOT_FIELD };
@@ -25,32 +24,41 @@ export function clientIp(headers: Headers): string {
 }
 
 /* =========================================================================
- * Rate limiting
+ * Rate limiting (in-memory)
  * ====================================================================== */
 
 const MAX_PER_WINDOW = 3;
-const WINDOW_HOURS = 6;
+const WINDOW_MS = 6 * 60 * 60 * 1000;
 
 /**
- * Durable rate limit. Serverless functions don't share memory between
- * invocations, so an in-process counter would reset constantly and let a
- * script straight through. Counting rows in Postgres survives cold starts.
+ * Counts recent accepted submissions per hashed IP in this Node process.
+ * Fine on a single VPS; the map is empty again after a process restart.
  */
-export async function isRateLimited(ipHash: string): Promise<boolean> {
-  try {
-    const db = sql();
-    const rows = (await db`
-      select count(*)::int as n
-      from client_intakes
-      where ip_hash = ${ipHash}
-        and created_at > now() - ${`${WINDOW_HOURS} hours`}::interval
-    `) as { n: number }[];
-    return (rows[0]?.n ?? 0) >= MAX_PER_WINDOW;
-  } catch {
-    // If the check itself fails, let the submission through rather than
-    // blocking a real client because of an infrastructure problem.
-    return false;
-  }
+const hits = new Map<string, number[]>();
+let ops = 0;
+
+function prune(ipHash: string, now: number): number[] {
+  const recent = (hits.get(ipHash) ?? []).filter((t) => now - t < WINDOW_MS);
+  if (recent.length === 0) hits.delete(ipHash);
+  else hits.set(ipHash, recent);
+  return recent;
+}
+
+function sweep(now: number) {
+  for (const key of [...hits.keys()]) prune(key, now);
+}
+
+export function isRateLimited(ipHash: string): boolean {
+  const now = Date.now();
+  if (++ops % 200 === 0) sweep(now);
+  return prune(ipHash, now).length >= MAX_PER_WINDOW;
+}
+
+export function recordAttempt(ipHash: string): void {
+  const now = Date.now();
+  const recent = prune(ipHash, now);
+  recent.push(now);
+  hits.set(ipHash, recent);
 }
 
 /* =========================================================================

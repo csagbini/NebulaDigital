@@ -1,7 +1,6 @@
 /**
- * Turns a stored row into readable question/answer pairs. Shared by the
- * notification email, the admin expand view and the printable summary, so all
- * three always show the same thing.
+ * Turns a submission into readable question/answer pairs for the
+ * notification email.
  */
 
 import {
@@ -49,8 +48,8 @@ function renderAnswer(
 }
 
 /**
- * @param includeEmpty  the printable proposal summary hides unanswered
- *                      optional questions; the admin view shows everything.
+ * @param includeEmpty  when false, unanswered optional questions are omitted
+ *                      (the notification email uses this).
  */
 export function buildSummary(
   row: Record<string, unknown>,
@@ -64,7 +63,6 @@ export function buildSummary(
       id: section.id,
       title: section.title[lang],
       items: section.fields
-        .filter((f) => f.type !== "file")
         .filter((f) => isVisible(f, values))
         .map((f) => {
           const { text, empty } = renderAnswer(f, row[f.key], lang);
@@ -80,7 +78,7 @@ export function buildSummary(
     .filter((s) => s.items.length > 0);
 }
 
-/** A few key facts for the email subject line and the admin table. */
+/** A few key facts for the email subject line and header. */
 export function headline(row: Record<string, unknown>) {
   return {
     business: (row.business_name as string) || "Unnamed business",

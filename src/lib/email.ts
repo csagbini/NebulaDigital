@@ -30,11 +30,9 @@ export interface NotifyArgs {
   id: string;
   row: Record<string, unknown>;
   lang: Lang;
-  files: { name: string; url: string; size: number }[];
-  adminUrl: string;
 }
 
-function buildHtml({ row, lang, files, adminUrl }: NotifyArgs): string {
+function buildHtml({ id, row, lang }: NotifyArgs): string {
   const h = headline(row);
   const summary = buildSummary(row, lang, false);
 
@@ -71,20 +69,6 @@ function buildHtml({ row, lang, files, adminUrl }: NotifyArgs): string {
     )
     .join("");
 
-  const fileList = files.length
-    ? `<tr><td style="padding:30px 0 10px">
-         <div style="color:${BRAND.warm};font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:600">Files (${files.length})</div>
-       </td></tr>
-       ${files
-         .map(
-           (f) => `<tr><td style="padding:5px 0">
-             <a href="${esc(f.url)}" style="color:${BRAND.ink};font-size:14px">${esc(f.name)}</a>
-             <span style="color:${BRAND.faint};font-size:12px"> · ${(f.size / 1024 / 1024).toFixed(2)} MB</span>
-           </td></tr>`,
-         )
-         .join("")}`
-    : "";
-
   return `<!DOCTYPE html>
 <html><body style="margin:0;padding:0;background:${BRAND.bg};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.bg};padding:32px 16px">
@@ -102,17 +86,14 @@ function buildHtml({ row, lang, files, adminUrl }: NotifyArgs): string {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${facts}</table>
         </td></tr>
 
-        <tr><td style="padding:24px 0 4px">
-          <a href="${esc(adminUrl)}" style="display:inline-block;background:${BRAND.ink};color:#000;text-decoration:none;font-weight:600;font-size:14px;padding:13px 26px;border-radius:40px">Open in admin</a>
+        <tr><td>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            ${body}
+          </table>
         </td></tr>
 
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-          ${body}
-          ${fileList}
-        </table>
-
         <tr><td style="padding-top:30px;border-top:1px solid ${BRAND.line}">
-          <div style="color:${BRAND.faint};font-size:12px">Submitted in ${lang === "es" ? "Spanish" : "English"} · Nebula Digital · Houston, TX</div>
+          <div style="color:${BRAND.faint};font-size:12px">Submitted in ${lang === "es" ? "Spanish" : "English"} · ref ${esc(id.slice(0, 8))} · Nebula Digital · Houston, TX</div>
         </td></tr>
 
       </table>
@@ -121,10 +102,37 @@ function buildHtml({ row, lang, files, adminUrl }: NotifyArgs): string {
 </body></html>`;
 }
 
+function buildText({ id, row, lang }: NotifyArgs): string {
+  const h = headline(row);
+  const summary = buildSummary(row, lang, false);
+  const lines = [
+    `New client intake — ${h.business}`,
+    `Contact: ${h.contact} · ${h.email} · ${h.phone}`,
+    `Goal: ${label("primary_goal", h.goal, lang)}`,
+    `Budget: ${label("budget_range", h.budget, lang)}`,
+    `Timeline: ${label("timeline", h.timeline, lang)}`,
+    "",
+  ];
+
+  for (const sec of summary) {
+    lines.push(sec.title);
+    lines.push("-".repeat(sec.title.length));
+    for (const it of sec.items) {
+      lines.push(`${it.question}`);
+      lines.push(it.answer);
+      lines.push("");
+    }
+  }
+
+  lines.push(
+    `Submitted in ${lang === "es" ? "Spanish" : "English"} · ref ${id.slice(0, 8)}`,
+  );
+  return lines.join("\n");
+}
+
 /**
- * Sends the notification. Deliberately never throws: if Resend is down or the
- * key is missing we still want the submission saved and the client to see a
- * thank-you screen. The error is logged for us instead.
+ * Email is the system of record. Returns false if Resend is unconfigured or
+ * rejects the message — the API treats that as a failed submission.
  */
 export async function sendNotification(args: NotifyArgs): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
@@ -146,6 +154,7 @@ export async function sendNotification(args: NotifyArgs): Promise<boolean> {
       replyTo: h.email || undefined,
       subject: `New intake — ${h.business}${h.budget ? ` · ${label("budget_range", h.budget, args.lang)}` : ""}`,
       html: buildHtml(args),
+      text: buildText(args),
     });
     if (error) {
       console.error("[intake] Resend rejected the message:", error);
