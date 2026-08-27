@@ -18,6 +18,13 @@ function label(key: string, value: string, lang: Lang): string {
   return optionLabel(f, value, lang);
 }
 
+function wantsLabel(raw: unknown, lang: Lang): string {
+  const f = fieldByKey("services_wanted");
+  const arr = Array.isArray(raw) ? raw.map(String) : [];
+  if (!f || arr.length === 0) return "—";
+  return arr.map((v) => optionLabel(f, v, lang)).join(", ");
+}
+
 function esc(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -38,7 +45,7 @@ function buildHtml({ id, row, lang }: NotifyArgs): string {
 
   const facts = [
     ["Contact", `${esc(h.contact)} · ${esc(h.email)} · ${esc(h.phone)}`],
-    ["Goal", esc(label("primary_goal", h.goal, lang))],
+    ["Wants", esc(wantsLabel(h.wants, lang))],
     ["Budget", esc(label("budget_range", h.budget, lang))],
     ["Timeline", esc(label("timeline", h.timeline, lang))],
   ]
@@ -108,7 +115,7 @@ function buildText({ id, row, lang }: NotifyArgs): string {
   const lines = [
     `New client intake — ${h.business}`,
     `Contact: ${h.contact} · ${h.email} · ${h.phone}`,
-    `Goal: ${label("primary_goal", h.goal, lang)}`,
+    `Wants: ${wantsLabel(h.wants, lang)}`,
     `Budget: ${label("budget_range", h.budget, lang)}`,
     `Timeline: ${label("timeline", h.timeline, lang)}`,
     "",

@@ -10,9 +10,9 @@ only serve files — it can't run server code — so the intake form (email, spa
 protection, a password-gated admin notice) could not live there. This repo is a
 Next.js app you run on a VPS (or any Node host).
 
-**Your homepage did not change.** `public/index.html` is the original file,
-byte for byte. `next.config.ts` rewrites `/` to it. Edit it exactly the way you
-always have — the Next app only adds routes alongside it.
+The marketing homepage is still the original hand-written `public/index.html`.
+`next.config.ts` rewrites `/` to it. The one start-here action is **Start a
+project**, which goes to `/intake`. There is no Book a call or WhatsApp CTA.
 
 ## Editing the questions
 
@@ -45,8 +45,8 @@ openssl rand -hex 32
 ```
 
 There is no `DATABASE_URL` and no Postgres. File uploads were dropped so the
-app does not depend on Vercel Blob; the last section of the form asks for
-links instead, and clients can attach files when they reply to the follow-up.
+app does not depend on Vercel Blob; the optional notes field accepts pasted
+links, and clients can attach files when they reply to the follow-up.
 
 ## VPS deploy
 
@@ -98,6 +98,7 @@ npm run dev
 node scripts/verify.mjs   # needs the dev server running
 ```
 
-Drives a real browser through the form at phone and desktop widths and checks
-validation, conditional fields, refresh persistence, the language toggle, the
-honeypot, and that `/admin/intakes` rejects anonymous visitors.
+Drives a real browser through the single-page form at phone and desktop
+widths and checks validation, refresh persistence, the language toggle, the
+honeypot, the homepage CTA, and that `/admin/intakes` rejects anonymous
+visitors.
