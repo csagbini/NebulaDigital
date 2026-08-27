@@ -23,7 +23,7 @@ export type Errors = Record<string, string>;
 /**
  * A field with a `showIf` is only asked when its condition is met. Hidden
  * fields are never required and their values are discarded on submit, so a
- * client can't sneak `website_url` in while claiming `has_website = "no"`.
+ * client can't sneak an answer in for a question that was never shown.
  */
 export function isVisible(field: Field, values: Values): boolean {
   if (!field.showIf) return true;

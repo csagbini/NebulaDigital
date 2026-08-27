@@ -43,14 +43,13 @@
 .ik-top-in {
   max-width: 780px;
   margin: 0 auto;
-  padding: 16px 24px 0;
+  padding: 16px 24px;
 }
 .ik-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 14px;
 }
 /* The lockup includes the wordmark, so it needs height to stay legible —
    below about 40px "NEBULA DIGITAL" turns to mush. */

@@ -24,27 +24,12 @@ const valid = () => ({
   email: "owner@cypressroofing.com",
   phone: "832-929-5126",
   business_description: "Residential roofing and storm damage repair.",
-  years_in_business: "3_10",
-  customer_location: "Houston metro, 30 mile radius",
-  typical_customer: "Homeowners 35-65 with storm damage",
-  differentiator: "Same-week turnaround and we handle the insurance claim",
-  has_website: "yes",
   website_url: "cypressroofing.com",
-  website_dislikes: "Slow, looks dated, no way to request a quote.",
-  primary_goal: "forms",
-  success_metric: "10 qualified quote requests a month",
-  sites_liked: "example.com — clean, fast, obvious call to action",
-  sites_disliked: "",
-  pages_needed: ["home", "services", "contact"],
-  copy_status: "have_some",
-  logo_status: "have_good",
-  photo_status: "few",
-  site_languages: ["en", "es"],
-  domain_status: "own_login",
+  services_wanted: ["new_website", "ads"],
   budget_range: "5000_10000",
   timeline: "1_3_months",
-  decision_makers: "just_me",
   contact_preference: "text",
+  notes: "https://drive.google.com/example",
   lang: "en",
 });
 
@@ -84,25 +69,28 @@ r = await post(
 t("option value outside the allow-list rejected", r.status === 400 && Boolean(r.body.errors?.budget_range));
 
 const missing = valid();
-delete missing.success_metric;
+delete missing.services_wanted;
 r = await post({ ...missing, started_at: old() }, { "x-forwarded-for": "10.0.0.5" });
-t("missing required field rejected", r.status === 400 && Boolean(r.body.errors?.success_metric));
+t("missing required field rejected", r.status === 400 && Boolean(r.body.errors?.services_wanted));
 
-console.log("\n--- hidden-field smuggling ---");
+const emptyWants = valid();
+emptyWants.services_wanted = [];
+r = await post({ ...emptyWants, started_at: old() }, { "x-forwarded-for": "10.0.0.8" });
+t("empty services_wanted rejected", r.status === 400 && Boolean(r.body.errors?.services_wanted));
+
+console.log("\n--- unknown keys dropped (email still the system of record) ---");
 r = await post(
   {
     ...valid(),
-    has_website: "no",
-    website_url: "https://evil.example",
-    website_dislikes: "x",
     admin_note_injection: "DROP",
+    years_in_business: "over_10",
     started_at: old(),
   },
   { "x-forwarded-for": "10.0.0.6" },
 );
 // Without Resend this is 500 (email is required). With Resend it's 200.
 t(
-  "conditional payload reaches email (or fails only on email)",
+  "payload with extra keys reaches email (or fails only on email)",
   r.status === 200 || r.status === 500,
   `status=${r.status}`,
 );
@@ -138,7 +126,7 @@ if (process.env.RESEND_API_KEY) {
 
 console.log("\n--- admin ---");
 const browser = await chromium.launch({
-  executablePath: process.env.PLAYWRIGHT_CHROME || undefined,
+  executablePath: process.env.PLAYWRIGHT_CHROME || "/usr/local/bin/google-chrome",
   args: ["--no-sandbox"],
 });
 const adm = await browser.newContext({ viewport: { width: 1440, height: 950 } });

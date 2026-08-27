@@ -69,8 +69,8 @@ export function recordAttempt(ipHash: string): void {
  * Two signals, both invisible to a real person:
  *   1. `company_website` is a hidden input. Humans never fill it; bots that
  *      auto-complete every field do.
- *   2. `started_at` is set when the form opens. A human takes minutes to get
- *      through six sections — anything under a few seconds is scripted.
+ *   2. `started_at` is set when the form opens. A human takes more than a
+ *      few seconds to fill it in — anything faster is scripted.
  */
 const MIN_FILL_SECONDS = 8;
 

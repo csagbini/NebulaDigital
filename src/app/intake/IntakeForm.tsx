@@ -5,58 +5,57 @@ import {
   type Field,
   type Lang,
   type UiStrings,
-  sections,
+  allFields,
   ui,
 } from "@/lib/strings";
 import {
   type Errors,
   type Values,
-  validateSection,
+  validateAll,
   visibleFields,
 } from "@/lib/validate";
 import { HONEYPOT_FIELD } from "@/lib/security.client";
 
-const STORAGE_KEY = "nebula_intake_v1";
+const STORAGE_KEY = "nebula_intake_v2";
 const LANG_KEY = "nebula_lang";
 
 interface Saved {
   values: Values;
-  step: number;
   startedAt: number;
 }
 
 function emptyValues(): Values {
   const v: Values = {};
-  for (const s of sections) {
-    for (const f of s.fields) {
-      v[f.key] = f.type === "checkbox" ? [] : "";
-    }
+  for (const f of allFields) {
+    v[f.key] = f.type === "checkbox" ? [] : "";
   }
   return v;
 }
 
 export default function IntakeForm() {
   const [lang, setLang] = useState<Lang>("en");
-  const [step, setStep] = useState(-1); // -1 intro · 0..n-1 sections · n done
+  const [done, setDone] = useState(false);
   const [values, setValues] = useState<Values>(emptyValues);
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const [restored, setRestored] = useState(false);
-  const [goingBack, setGoingBack] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
-  const startedAt = useRef<number>(Date.now());
+  const startedAt = useRef<number>(0);
   const honeypot = useRef<HTMLInputElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
 
   const t = ui[lang];
-  const total = sections.length;
-  const done = step >= total;
+  const shown = visibleFields(allFields, values);
 
   /* ---------------------------------------------------------- restore */
 
+  // localStorage is the resume store. Read it after mount so the server
+  // render stays empty; the extra render is the cost of not flashing English
+  // (or a blank form) over a saved session.
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- hydrate from localStorage */
     try {
       const savedLang = localStorage.getItem(LANG_KEY);
       if (savedLang === "en" || savedLang === "es") setLang(savedLang);
@@ -70,29 +69,32 @@ export default function IntakeForm() {
           const hasAnswers = Object.values(parsed.values).some((v) =>
             Array.isArray(v) ? v.length > 0 : Boolean(v),
           );
-          if (hasAnswers) {
-            setRestored(true);
-            setStep(Math.min(Math.max(parsed.step ?? 0, 0), total - 1));
-          }
+          if (hasAnswers) setRestored(true);
+        } else {
+          startedAt.current = Date.now();
         }
+      } else {
+        startedAt.current = Date.now();
       }
     } catch {
       /* corrupted storage shouldn't break the form */
+      startedAt.current = Date.now();
     }
     setHydrated(true);
-  }, [total]);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   /* ------------------------------------------------------------- save */
 
   useEffect(() => {
     if (!hydrated || done) return;
     try {
-      const payload: Saved = { values, step, startedAt: startedAt.current };
+      const payload: Saved = { values, startedAt: startedAt.current };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {
       /* private mode / quota — form still works, just won't resume */
     }
-  }, [values, step, hydrated, done]);
+  }, [values, hydrated, done]);
 
   useEffect(() => {
     if (hydrated) localStorage.setItem(LANG_KEY, lang);
@@ -134,47 +136,26 @@ export default function IntakeForm() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function goBack() {
-    setGoingBack(true);
-    setFormError("");
-    setStep((s) => Math.max(s - 1, 0));
-    scrollTop();
-  }
-
-  async function goNext() {
-    setGoingBack(false);
-    const section = sections[step];
-    const found = validateSection(section, values, lang);
-
-    if (Object.keys(found).length > 0) {
-      setErrors(found);
-      setFormError(t.errFixAbove);
-      // Focus the first thing that's wrong so phone users aren't hunting.
-      const firstKey = visibleFields(section.fields, values).find(
-        (f) => found[f.key],
-      )?.key;
-      if (firstKey) {
-        document
-          .querySelector<HTMLElement>(`[data-field="${firstKey}"]`)
-          ?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
-    }
-
-    setErrors({});
-    setFormError("");
-
-    if (step < total - 1) {
-      setStep(step + 1);
-      scrollTop();
-    } else {
-      await submit();
+  function focusFirstError(found: Errors) {
+    const firstKey = shown.find((f) => found[f.key])?.key;
+    if (firstKey) {
+      document
+        .querySelector<HTMLElement>(`[data-field="${firstKey}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
 
   /* ------------------------------------------------------------ submit */
 
   async function submit() {
+    const found = validateAll(values, lang);
+    if (Object.keys(found).length > 0) {
+      setErrors(found);
+      setFormError(t.errFixAbove);
+      focusFirstError(found);
+      return;
+    }
+
     setBusy(true);
     setFormError("");
 
@@ -200,15 +181,9 @@ export default function IntakeForm() {
           errors?: Errors;
         };
         if (body.errors && Object.keys(body.errors).length > 0) {
-          // The server rejected something the client let through — jump the
-          // user back to the section that actually contains the problem.
           setErrors(body.errors);
-          const badKey = Object.keys(body.errors)[0];
-          const idx = sections.findIndex((s) =>
-            s.fields.some((f) => f.key === badKey),
-          );
-          if (idx >= 0) setStep(idx);
           setFormError(t.errFixAbove);
+          focusFirstError(body.errors);
         } else {
           setFormError(t.errSubmit);
         }
@@ -221,7 +196,7 @@ export default function IntakeForm() {
       } catch {
         /* ignore */
       }
-      setStep(total);
+      setDone(true);
       scrollTop();
     } catch {
       setFormError(t.errSubmit);
@@ -238,9 +213,9 @@ export default function IntakeForm() {
     }
     setValues(emptyValues());
     setErrors({});
+    setFormError("");
     setRestored(false);
     startedAt.current = Date.now();
-    setStep(-1);
   }
 
   /* ------------------------------------------------------------ render */
@@ -263,42 +238,6 @@ export default function IntakeForm() {
   // Avoid a flash of English before localStorage is read.
   if (!hydrated) {
     return <div className="ik" aria-busy="true" />;
-  }
-
-  /* ------ intro ------ */
-  if (step === -1) {
-    return (
-      <div className="ik">
-        <div className="ik-glow" />
-        <div className="ik-top">
-          <div className="ik-top-in">
-            <div className="ik-bar">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="ik-logo" src="/brand.png" alt={t.brandAlt} />
-              {LangToggle}
-            </div>
-          </div>
-        </div>
-        <div className="ik-centre">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="ik-herologo" src="/brand.png" alt={t.brandAlt} />
-          <span className="ik-label">{t.kicker}</span>
-          <h1 className="ik-title">{t.introTitle}</h1>
-          <p>{t.introBody}</p>
-          <div style={{ marginTop: 40 }}>
-            <button
-              className="ik-btn ik-btn-solid"
-              onClick={() => setStep(0)}
-              type="button"
-              style={{ flex: "none", padding: "16px 44px" }}
-            >
-              {t.introStart}
-            </button>
-          </div>
-          <div className="meta">{t.introMeta}</div>
-        </div>
-      </div>
-    );
   }
 
   /* ------ thank you ------ */
@@ -333,11 +272,6 @@ export default function IntakeForm() {
     );
   }
 
-  /* ------ a section ------ */
-  const section = sections[step];
-  const shown = visibleFields(section.fields, values);
-  const pct = ((step + 1) / total) * 100;
-
   return (
     <div className="ik">
       <div className="ik-glow" />
@@ -350,21 +284,12 @@ export default function IntakeForm() {
             <img className="ik-logo" src="/brand.png" alt={t.brandAlt} />
             {LangToggle}
           </div>
-          <div className="ik-prog">
-            <i style={{ width: `${pct}%` }} />
-          </div>
-          <div className="ik-steps">
-            <span>
-              {t.step} <b>{step + 1}</b> {t.of} <b>{total}</b>
-            </span>
-            <span>{section.title[lang]}</span>
-          </div>
         </div>
       </header>
 
       <main className="ik-main">
-        <div className={`ik-screen${goingBack ? " back" : ""}`} key={section.id}>
-          {restored && step === 0 && (
+        <div className="ik-screen">
+          {restored && (
             <div className="ik-restored">
               <span>{t.restored}</span>
               <button type="button" onClick={startOver}>
@@ -373,9 +298,9 @@ export default function IntakeForm() {
             </div>
           )}
 
-          <span className="ik-label">{section.title[lang]}</span>
-          <h1 className="ik-title">{section.subtitle[lang]}</h1>
-          <div className="ik-sub" />
+          <span className="ik-label">{t.kicker}</span>
+          <h1 className="ik-title">{t.introTitle}</h1>
+          <p className="ik-sub">{t.introBody}</p>
 
           {shown.map((field) => (
             <FieldView
@@ -408,27 +333,13 @@ export default function IntakeForm() {
       <footer className="ik-foot">
         {formError && <div className="ik-formerr">{formError}</div>}
         <div className="ik-foot-in">
-          {step > 0 && (
-            <button
-              className="ik-btn"
-              onClick={goBack}
-              disabled={busy}
-              type="button"
-            >
-              {t.back}
-            </button>
-          )}
           <button
             className="ik-btn ik-btn-solid"
-            onClick={goNext}
+            onClick={() => void submit()}
             disabled={busy}
             type="button"
           >
-            {busy
-              ? t.submitting
-              : step === total - 1
-                ? t.submit
-                : t.next}
+            {busy ? t.submitting : t.submit}
           </button>
         </div>
       </footer>

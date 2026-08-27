@@ -86,7 +86,7 @@ export function headline(row: Record<string, unknown>) {
     email: (row.email as string) || "",
     phone: (row.phone as string) || "",
     budget: (row.budget_range as string) || "",
-    goal: (row.primary_goal as string) || "",
+    wants: Array.isArray(row.services_wanted) ? row.services_wanted : [],
     timeline: (row.timeline as string) || "",
   };
 }
